@@ -1,11 +1,16 @@
 from django.db import models
 
 # Create your models here.
-class Clients(models.Model):
-    # Maybe should implement one-to-one relation which would symbolize connection(self.channel_name, anon.channel_name)
+class Group(models.Model):
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+class Channel(models.Model):
     channel_name = models.CharField(max_length=100)
     is_busy = models.BooleanField()
-    anon_channel_name = models.CharField(max_length=100, default=None, null=True)
+    group_name = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
         return self.channel_name
