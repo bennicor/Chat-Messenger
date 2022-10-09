@@ -10,7 +10,7 @@ class Group(models.Model):
 class Channel(models.Model):
     channel_name = models.CharField(max_length=100)
     is_busy = models.BooleanField()
-    group_name = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, default=None)
+    group_name = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, default=None, related_name="channels")
 
     def __str__(self):
         return self.channel_name

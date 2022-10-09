@@ -30,7 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if self.group_name:
             group_exists = await self.is_group_exists(self.group_name)
-            
+
             if not group_exists:
                 return
 
@@ -48,11 +48,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.group_name,
                 self.channel_name
             )
-
-            # await self.channel_layer.send(self.anon_channel_name, {
-            #     "type": "close.connection",
-            #     "code": 1000
-            # })
 
     async def receive(self, text_data):
         if not self.connected:
@@ -85,12 +80,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             ))
         elif action == "chat":
-            user = event["user"]
-
             await self.send(text_data=json.dumps(
                 {
                     "type": "chat",
-                    "user": user,
+                    "user": event["user"],
                     "message": message
                 }
             ))
@@ -141,5 +134,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def is_group_exists(self, group_name):
         try:
             return Group.objects.get(name=group_name)
-        except Channel.DoesNotExist:
+        except Group.DoesNotExist:
             return False
