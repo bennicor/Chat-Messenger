@@ -4,13 +4,20 @@ const chatSocket = new WebSocket(url);
 chatSocket.onmessage = function(e) {
     let data = JSON.parse(e.data);
     let messages = document.getElementById("messages");
-    console.log(data.message)
+    let userId = sessionStorage.getItem("user_id");
     
     if (data.type === "chat") {
-        messages.insertAdjacentHTML("beforeend", `<div><p>abob ${data.message}</p></div>`)
+        if (data.user_id == userId) {
+            user = "me"
+        } else {
+            user = "nekto"
+        }
+
+        messages.insertAdjacentHTML("beforeend", `<div><p>${user}: ${data.message} <small>${data.time}</small></p></div>`)
     } else if (data.type === "user_id") {
-        console.log("USER ID GOTTEn " + data.message);
         sessionStorage.setItem("user_id", data.message);
+    } else if (data.type === "start") {
+        messages.insertAdjacentHTML("beforeend", `<div><p>--- Собеседник найден ---</p></div>`)
     }
 };
 

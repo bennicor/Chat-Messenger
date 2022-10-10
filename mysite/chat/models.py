@@ -15,3 +15,13 @@ class Channel(models.Model):
 
     def __str__(self):
         return self.channel_name
+
+class MessageLine(models.Model):
+    message = models.TextField()
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user_id = models.IntegerField()
+    time_created = models.TimeField()
+
+    def __str__(self):
+        return self.message
+

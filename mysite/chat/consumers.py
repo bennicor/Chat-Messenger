@@ -1,8 +1,9 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from chat.models import Channel, Group
+from chat.models import Channel, Group, MessageLine
 from asgiref.sync import sync_to_async
+from datetime import datetime
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -53,6 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.session_updated = True
         await self.restore_connection(self.channel_name, self.group_name, self.user_id)
+        await self.load_chat_history()
         await self.connect_to_group(self.group_name)
 
     async def disconnect(self, close_code):
@@ -68,12 +70,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.connected:
             return None
 
-        # Add message entry to db
-        
-
         # Send data to all channels in the group
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
+
+        # Add message entry to db
+        current_time = datetime.now()
+        await self.add_message(message, self.group_name, self.user_id, current_time)
+        current_time = current_time.strftime("%H:%M")
 
         # Send message to current channel
         await self.channel_layer.group_send(
@@ -82,7 +86,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "send.json",
                 "action": "chat",
                 "user_id": self.user_id,
-                "message": message
+                "message": message,
+                "time": current_time,
             }
         )
 
@@ -95,7 +100,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "type": action,
                     "user_id": event["user_id"],
-                    "message": message
+                    "message": message,
+                    "time": event["time"],
                 }
             ))
         elif action == "user_id":
@@ -112,7 +118,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message": message
                 }
             ))
-
 
     async def get_data(self, event):
         self.group_name = event["group_name"]
@@ -151,6 +156,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.scope["session"]["user_data"]["user_id"] = user_id
         await sync_to_async(self.scope["session"].save)()
 
+    async def load_chat_history(self):
+        group_messages = await self.get_group_messages(self.group_name)
+        # Send all the messages to client
+        for message in group_messages:
+            await self.send_json(
+                {
+                    "action": "chat",
+                    "user_id": message.user_id,
+                    "message": message.message,
+                    "time": message.time_created.strftime("%H:%M"),
+                }
+            )
+
     async def close_connection(self, event):
         code = event.get("code", None)
         await self.close(code)
@@ -187,3 +205,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return Channel.objects.last().id + 1
         except AttributeError:
             return 1
+
+    @database_sync_to_async
+    def add_message(self, message, group_name, user_id, time_created):
+    
+        group = Group.objects.get(name=group_name)
+
+        MessageLine.objects.create(message=message, group=group, user_id=user_id, time_created=time_created)
+
+    @database_sync_to_async
+    def get_group_messages(self, group_name):
+        group = Group.objects.get(name=group_name)
+
+        return list(MessageLine.objects.filter(group=group).all())
