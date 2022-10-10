@@ -9,14 +9,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.group_name = None
+        self.user_id = None
         self.connected = False
         self.session_updated = False
 
     async def connect(self):
         await self.accept()
+
+        user_session_data = await sync_to_async(self.scope["session"].get)("user_data")
+        
+        # Get user id which indicates user in the chat
+        self.user_id = await self.get_user_id(user_session_data)
         await self.add_user()
 
-        await self.reconnect_to_group()
+        if user_session_data:
+            await self.reconnect_to_group(user_session_data)
 
         if not self.connected:
             # Let a worker do the searching in the background
@@ -25,25 +32,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "channel": self.channel_name,
             })
 
-    async def reconnect_to_group(self):
-        self.group_name = await sync_to_async(self.scope["session"].get)("group_name")
+    async def get_user_id(self, user_session_data):
+        # By default user id will be equal to next entry id
+        user_id = await self.get_next_entry_id()
 
-        if self.group_name:
-            group_exists = await self.is_group_exists(self.group_name)
+        if user_session_data:
+            # if conversastion is still going
+            if await self.is_group_exists(user_session_data["group_name"]):
+                user_id = user_session_data["user_id"]
 
-            if not group_exists:
-                return
+        return user_id
 
-            await self.restore_connection(self.channel_name, self.group_name)
-            await self.connect_to_group(self.group_name)
+    async def reconnect_to_group(self, user_session_data):
+        self.group_name = user_session_data["group_name"]
+
+        group_exists = await self.is_group_exists(self.group_name)
+
+        if not group_exists:
+            return
+
+        self.session_updated = True
+        await self.restore_connection(self.channel_name, self.group_name, self.user_id)
+        await self.connect_to_group(self.group_name)
 
     async def disconnect(self, close_code):
-        # Remove from database
         await self.delete_user()
 
-        # If channel was connected
         if self.group_name:
-            # Remove this channel from the group
             await self.channel_layer.group_discard(
                 self.group_name,
                 self.channel_name
@@ -53,7 +68,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.connected:
             return None
 
-        # Send data all channels in the group
+        # Add message entry to db
+        
+
+        # Send data to all channels in the group
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
 
@@ -63,7 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 "type": "send.json",
                 "action": "chat",
-                "user": self.channel_name,
+                "user_id": self.user_id,
                 "message": message
             }
         )
@@ -72,21 +90,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
         action = event["action"]
         message = event["message"]
 
-        if action == "close":
+        if action == "chat":
             await self.send(text_data=json.dumps(
                 {
-                    "type": "close",
+                    "type": action,
+                    "user_id": event["user_id"],
                     "message": message
                 }
             ))
-        elif action == "chat":
+        elif action == "user_id":
             await self.send(text_data=json.dumps(
                 {
-                    "type": "chat",
-                    "user": event["user"],
+                    "type": action,
                     "message": message
                 }
             ))
+        elif action == "start":
+            await self.send(text_data=json.dumps(
+                {
+                    "type": action,
+                    "message": message
+                }
+            ))
+
 
     async def get_data(self, event):
         self.group_name = event["group_name"]
@@ -101,12 +127,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.connected = True
 
         if not self.session_updated:
-            await self.update_session(group_name)
+            await self.update_session(group_name, self.user_id)
 
-    async def update_session(self, group_name):
-        self.scope["session"]["group_name"] = group_name
+            # Send user id to front end client
+            await self.send_json(
+                {
+                    "action": "user_id",
+                    "message": self.user_id
+                }
+            )
+
+        # Send message that everything is ready
+        await self.send_json(
+            {
+                "action": "start",
+                "message": "start"
+            }
+        )
+
+    async def update_session(self, group_name, user_id):
+        self.scope["session"]["user_data"] = {}
+        self.scope["session"]["user_data"]["group_name"] = group_name
+        self.scope["session"]["user_data"]["user_id"] = user_id
         await sync_to_async(self.scope["session"].save)()
-        self.session_updated = True
 
     async def close_connection(self, event):
         code = event.get("code", None)
@@ -115,19 +158,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Database queries, decorated for asynchronous purposes
     @database_sync_to_async
     def add_user(self):
-        Channel.objects.create(channel_name=self.channel_name, is_busy=False, group_name=None)
+        Channel.objects.create(channel_name=self.channel_name, is_busy=False, group_name=None, user_id=self.user_id)
 
     @database_sync_to_async
     def delete_user(self):
         Channel.objects.get(channel_name=self.channel_name).delete()
 
     @database_sync_to_async
-    def restore_connection(self, channel_name, group_name):        
+    def restore_connection(self, channel_name, group_name, unique_id):
         group = Group.objects.get(name=group_name)
 
         cur_channel = Channel.objects.get(channel_name=channel_name)
         cur_channel.is_busy = True
         cur_channel.group_name = group
+        cur_channel.user_id = unique_id
         cur_channel.save()
 
     @database_sync_to_async
@@ -136,3 +180,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return Group.objects.get(name=group_name)
         except Group.DoesNotExist:
             return False
+
+    @database_sync_to_async
+    def get_next_entry_id(self):
+        try:
+            return Channel.objects.last().id + 1
+        except AttributeError:
+            return 1
