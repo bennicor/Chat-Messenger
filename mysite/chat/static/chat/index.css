@@ -1,0 +1,244 @@
+* {
+    text-decoration: none;
+    list-style: none;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Header block */
+#header {
+    width: 100%;
+    height: 80px;
+    display: block;
+    background-color: rgb(231, 226, 226);
+}
+
+.inner-header {
+    width: 95%;
+    height: 100%;
+    display: flex;
+    margin: 0 auto;
+}
+
+.left, .right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.right {
+    justify-content: flex-end;
+}
+
+.logo-container h1 {
+    color: rgb(94, 94, 94);
+    font-family: "Montserrat";
+    font-size: 32px;
+    font-weight: 200;
+}
+
+.logo-container h1 span {
+    font-weight: 800;
+    color: rgb(175, 18, 128);
+}
+
+.navigation {
+    float: right;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.navigation li:last-child {
+    padding-right: 0;
+}
+
+.navigation li {
+    height: 100%;
+    display: table;
+    float: left;
+    padding: 0 20px;
+}
+
+.navigation li a {
+    display: table-cell;
+    vertical-align: middle;
+    height: 100%;
+    color: rgb(94, 94, 94);
+    font-family: "Montserrat";
+    font-size: 16px;
+}
+
+.navigation li a:hover {
+    color: rgb(80, 80, 80);
+    font-weight: 600;
+}
+
+/* Content block */
+#content {
+    height: 100%;
+    background-color: black;
+}
+
+.chatbox {
+    margin: 0 auto;
+    width: 700px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+.chat-window {
+    flex: auto;
+    max-height: calc(100% - 60px);
+    background: #2f323b;
+    overflow: auto;
+}
+.chat-input {
+    flex: 0 0 auto;
+    height: 60px;
+    background: #40434e;
+    border-top: 1px solid #2671ff;
+    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+}
+.chat-input input {
+    height: 59px;
+    line-height: 60px;
+    outline: 0 none;
+    border: none;
+    width: calc(100% - 60px);
+    color: white;
+    text-indent: 10px;
+    font-size: 12pt;
+    padding: 0;
+    background: #40434e;
+}
+.chat-input button {
+    float: right;
+    outline: 0 none;
+    border: none;
+    background: rgba(255,255,255,.25);
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    padding: 2px 0 0 0;
+    margin: 10px;
+    transition: all 0.15s ease-in-out;
+}
+.chat-input input[good] + button {
+    box-shadow: 0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.24);
+    background: #2671ff;
+}
+.chat-input input[good] + button:hover {
+    box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.chat-input input[good] + button path {
+    fill: white;
+}
+
+.msg-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+.msg-box {
+    display: flex;
+    padding: 10px 10px 0 10px;
+    border-radius: 6px;
+    max-width: 80%;
+    width: auto;
+    box-shadow: 0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.24);
+}
+
+.user-img {
+    display: inline-block;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    background: #2671ff;
+    margin: 0 10px 10px 0;
+}
+
+.flr {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 50px);
+}
+
+.messages {
+    flex: 1 0 auto;
+}
+
+.msg {
+    display: inline-block;
+    font-size: 11pt;
+    line-height: 13pt;
+    color: rgba(255,255,255,.7);
+    margin: 0 0 4px 0;
+}
+
+.msg:first-of-type {
+    margin-top: 8px;
+}
+
+.timestamp {
+    color: rgba(0,0,0,.38);
+    font-size: 8pt;
+    margin-bottom: 10px;
+}
+
+.username {
+    margin-right: 3px;
+    color: rgb(212, 212, 212);
+}
+
+.posttime {
+    margin-left: 3px;
+    color: rgb(212, 212, 212);
+}
+
+.msg-remote .msg-box {
+    background: #5b5e6c;
+    float: left;
+    margin-left: 5px;
+}
+
+.msg-self .msg-box {
+    background: #2671ff;
+    margin-right: 5px;
+    float: right;
+}
+
+.msg-self .user-img {
+    margin: 0 0 10px 10px;
+}
+
+.msg-self .msg {
+    text-align: right;
+}
+
+.msg-self .timestamp {
+    text-align: right;
+}
+
+/* Footer block */
+#footer {
+    margin-top: auto;
+    width: 100%;
+    height: 50px;
+    background-color: rgb(231, 226, 226);
+    color: rgb(94, 94, 94);
+    text-align: center;
+    font-size: 14px;
+}   
