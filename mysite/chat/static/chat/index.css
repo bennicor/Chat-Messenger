@@ -15,7 +15,7 @@ body {
     width: 100%;
     height: 80px;
     display: block;
-    background-color: rgb(231, 226, 226);
+    background: #40434e;
 }
 
 .inner-header {
@@ -36,7 +36,7 @@ body {
 }
 
 .logo-container h1 {
-    color: rgb(94, 94, 94);
+    color: white;
     font-family: "Montserrat";
     font-size: 32px;
     font-weight: 200;
@@ -70,28 +70,28 @@ body {
     display: table-cell;
     vertical-align: middle;
     height: 100%;
-    color: rgb(94, 94, 94);
+    color: white;
     font-family: "Montserrat";
     font-size: 16px;
 }
 
 .navigation li a:hover {
-    color: rgb(80, 80, 80);
+    color: rgb(173, 170, 170);
     font-weight: 600;
 }
 
 /* Content block */
 #content {
     height: 100%;
+    position: relative;
     background-color: black;
 }
 
 .chatbox {
-    margin: 0 auto;
+    border-radius: 10px;
+    margin: 10px auto;
     width: 700px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    height: 700px;
     overflow: hidden;
     box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
@@ -100,6 +100,7 @@ body {
     max-height: calc(100% - 60px);
     background: #2f323b;
     overflow: auto;
+    height: 100%;
 }
 .chat-input {
     flex: 0 0 auto;
@@ -147,7 +148,7 @@ body {
     position: relative;
     display: inline-block;
     width: 100%;
-    margin: 0 0 10px 0;
+    margin: 10px 0 0 0;
     padding: 0;
 }
 
@@ -156,17 +157,8 @@ body {
     padding: 10px 10px 0 10px;
     border-radius: 6px;
     max-width: 80%;
-    width: auto;
     box-shadow: 0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.24);
-}
-
-.user-img {
-    display: inline-block;
-    border-radius: 50%;
-    height: 40px;
-    width: 40px;
-    background: #2671ff;
-    margin: 0 10px 10px 0;
+    overflow-wrap: anywhere;
 }
 
 .flr {
@@ -182,9 +174,9 @@ body {
 
 .msg {
     display: inline-block;
-    font-size: 11pt;
-    line-height: 13pt;
-    color: rgba(255,255,255,.7);
+    font-size: 18px;
+    line-height: 10pt;
+    color: rgb(255,255,255);
     margin: 0 0 4px 0;
 }
 
@@ -224,21 +216,109 @@ body {
     margin: 0 0 10px 10px;
 }
 
-.msg-self .msg {
-    text-align: right;
-}
-
 .msg-self .timestamp {
     text-align: right;
 }
 
+.button {
+  background-color: #FFFFFF;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #222222;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  margin: 0 auto;
+  outline: none;
+  padding: 13px 23px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
+  user-select: none;
+  -webkit-user-select: none;
+  width: auto;
+}
+
+.button:hover {
+    background-color: #cecdcd;
+}
+
+#stop {
+    top: 95%;
+}
 /* Footer block */
 #footer {
     margin-top: auto;
     width: 100%;
     height: 50px;
-    background-color: rgb(231, 226, 226);
-    color: rgb(94, 94, 94);
+    background: #40434e;
+    color: white;
     text-align: center;
     font-size: 14px;
-}   
+}
+
+/* Loading screen */
+.wrapper{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%); 
+}
+
+.circle{
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background-color: rgb(175, 18, 128);
+    border-radius: 50%;
+    animation: loading 1.5s cubic-bezier(.8, .5, .2, 1.4) infinite;
+    transform-origin: bottom center;
+    position: relative;
+  }
+
+  @keyframes loading{
+    0%{
+      transform: translateY(0px);
+      background-color: rgb(175, 18, 128);
+    }
+    50%{
+      transform: translateY(50px);
+      background-color: rgb(117, 26, 90);
+    }
+    100%{
+      transform: translateY(0px);
+      background-color: rgb(175, 18, 128);
+    }
+  }
+  .circle-1{
+    animation-delay: 0.1s;
+  }
+  .circle-2{
+    animation-delay: 0.2s;
+  }
+  .circle-3{
+    animation-delay: 0.3s;
+  }
+  .circle-4{
+    animation-delay: 0.4s;
+  }
+  .circle-5{
+    animation-delay: 0.5s;
+  }
+  .circle-6{
+    animation-delay: 0.6s;
+  }
+  .circle-7{
+    animation-delay: 0.7s;
+  }
+  .circle-8{
+    animation-delay: 0.8s;
+  }
