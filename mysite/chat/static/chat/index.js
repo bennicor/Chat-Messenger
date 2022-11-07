@@ -1,9 +1,11 @@
-let loadingScreen = document.getElementById("loading-screen");
-let searchButton = document.getElementById("search");
-let stopButton = document.getElementById("stop");
-let form = document.getElementById("form");
-let chatWindow = document.getElementById("chat");
-let chatMessages = document.getElementById("messages");
+const loadingScreen = document.getElementById("loading-screen");
+const searchButton = document.getElementById("search");
+const stopButton = document.getElementById("stop");
+const form = document.getElementById("form");
+const chatWindow = document.getElementById("chat");
+const chatMessages = document.getElementById("messages");
+const chatInput = document.querySelector(".chat-input input");
+const statusMessage = document.getElementById("status");
 const url = `ws://${window.location.host}/ws/chat/`;
 
 if (localStorage.getItem("chatting") && localStorage.getItem("group_name")) {
@@ -60,6 +62,15 @@ function handleMessage(e) {
         // If backend is ready
         toggleLoadingScreen();
         toggleChatElements();
+    } else if (data.type === "typing") {
+        let status = data.message;
+        if (status) {
+            statusMessage.innerText = "Печатает...";
+            setVisibility(statusMessage, "block");
+        } else {
+            statusMessage.innerText = "";
+            setVisibility(statusMessage, "none");
+        }
     }
 }
 
@@ -76,21 +87,26 @@ function toggleLoadingScreen() {
     loadingScreen.style.display = (loadingScreen.style.display == "none") ? "block" : "none";
 }
 
+var timeout;
+
 function startChat() {
     setVisibility(searchButton, "none");
     toggleLoadingScreen();
     var chatSocket = new WebSocket(url);
     chatSocket.onmessage = function(e) {handleMessage(e)};
     
+    // Handle chat elements
     const formSubmitListener = (e) => {
         e.preventDefault();
         let message = e.target.message.value;
         
         if (message != "") {
             chatSocket.send(JSON.stringify({
+                "type": "message",
                 "message": message
             }));
             form.reset();
+            timeoutFunction();
         }
     }
 
@@ -101,11 +117,36 @@ function startChat() {
         chatSocket.close(3000, "User closed chat");
     });
 
+    // Handle typing status
+    function timeoutFunction() {
+        chatSocket.send(JSON.stringify({
+            "type": "typing",
+            "message": false
+        }));
+    }
+    
+    const alphaRegex = new RegExp("^[A-Za-z0-9 ]");
+    chatInput.addEventListener('keyup', function(e) {
+        keyPressed = String.fromCharCode(e.which);
+
+        // React only on typing keys
+        if (alphaRegex.test(keyPressed)) {
+            chatSocket.send(JSON.stringify({
+                "type": "typing",
+                "message": true
+            }));
+           clearTimeout(timeout);
+           timeout = setTimeout(timeoutFunction, 2000);
+        }
+    })
+      
+    // Handle socket closing
     chatSocket.onclose = function(e) {
         setVisibility(searchButton, "block");
         setVisibility(stopButton, "none");
         setVisibility(chatWindow, "none");
         setVisibility(loadingScreen, "none");
+        setVisibility(statusMessage, "none");
         localStorage.clear();
         // Update form event listener 
         // so new WebSocket object will be updated as well 
@@ -115,11 +156,17 @@ function startChat() {
     }
 }
 
-const chatInput = document.querySelector(".chat-input input");
+// Make submit button glow when typing
 chatInput.addEventListener("keyup", (e) => {
     if (chatInput.value == "") {
         chatInput.removeAttribute("good");
     } else {
         chatInput.setAttribute("good", "");
+    }
+});
+
+form.addEventListener("submit", (e) => {
+    if (chatInput.value == "") {
+        chatInput.removeAttribute("good");
     }
 });

@@ -83,32 +83,43 @@ body {
 /* Content block */
 #content {
     height: 100%;
-    position: relative;
     background-color: black;
 }
 
 .chatbox {
+    position: relative;
     border-radius: 10px;
     margin: 10px auto;
     width: 700px;
     height: 700px;
-    overflow: hidden;
-    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 }
 .chat-window {
-    flex: auto;
+    border-radius: 10px 10px 0 0;
     max-height: calc(100% - 60px);
     background: #2f323b;
     overflow: auto;
     height: 100%;
 }
 .chat-input {
-    flex: 0 0 auto;
+    position: relative;
     height: 60px;
     background: #40434e;
     border-top: 1px solid #2671ff;
-    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+    border-radius: 0 0 10px 10px;
 }
+
+#status {
+    position: absolute;
+    top: -20px;
+    color: white;
+    left: 10px;
+    width: 90px;
+    height: 20px;
+    background: rgba(0,0,0,0.4);
+    box-shadow: 1px 1px 15px black;
+    margin: 0;
+}
+
 .chat-input input {
     height: 59px;
     line-height: 60px;
@@ -120,6 +131,7 @@ body {
     font-size: 12pt;
     padding: 0;
     background: #40434e;
+    border-radius: 0 0 10px 10px;
 }
 .chat-input button {
     float: right;
@@ -145,7 +157,6 @@ body {
 }
 
 .msg-container {
-    position: relative;
     display: inline-block;
     width: 100%;
     margin: 10px 0 0 0;
@@ -227,7 +238,6 @@ body {
   box-sizing: border-box;
   color: #222222;
   cursor: pointer;
-  display: inline-block;
   font-size: 16px;
   font-weight: 600;
   line-height: 20px;
@@ -235,25 +245,24 @@ body {
   outline: none;
   padding: 13px 23px;
   position: absolute;
-  top: 50%;
   left: 50%;
-  transform: translateY(-50%) translateX(-50%);
+  transform: translateX(-50%);
   text-align: center;
   text-decoration: none;
-  touch-action: manipulation;
-  transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
-  user-select: none;
-  -webkit-user-select: none;
-  width: auto;
 }
 
 .button:hover {
     background-color: #cecdcd;
 }
 
-#stop {
-    top: 95%;
+.button#search {
+    top: 50%;
 }
+
+.button#stop {
+    bottom: -60px;
+}
+
 /* Footer block */
 #footer {
     margin-top: auto;

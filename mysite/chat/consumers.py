@@ -87,24 +87,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Send data to all channels in the group
         text_data_json = json.loads(text_data)
+        event_type = text_data_json["type"]
         message = text_data_json["message"]
 
-        # Add message entry to db
-        current_time = datetime.now()
-        await self.add_message(message, self.group_name, self.user_id, current_time)
-        current_time = current_time.strftime("%H:%M")
+        if event_type == "message":
+            # Add message entry to db
+            current_time = datetime.now()
+            await self.add_message(message, self.group_name, self.user_id, current_time)
+            current_time = current_time.strftime("%H:%M")
 
-        # Send message to current channel
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                "type": "send.json",
-                "action": "chat",
-                "user_id": self.user_id,
-                "message": message,
-                "time": current_time,
-            }
-        )
+            # Send message to current channel
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "send.json",
+                    "action": "chat",
+                    "user_id": self.user_id,
+                    "message": message,
+                    "time": current_time,
+                }
+            )
+        elif event_type == "typing":
+            sender_channel_name = self.channel_name
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "send.json",
+                    "action": "typing",
+                    "message": message,
+                    "sender_channel_name": sender_channel_name,
+                }
+            )
 
     async def send_json(self, event):
         action = event["action"]
@@ -134,13 +147,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "message": message
                 }
             ))
-        elif action == "close":
-            await self.send(text_data=json.dumps(
-                {
-                    "type": action,
-                    "message": message
-                }
-            ))
+        elif action == "typing":
+            if self.channel_name != event["sender_channel_name"]:
+                await self.send(text_data=json.dumps(
+                    {
+                        "type": action,
+                        "message": message
+                    }
+                ))
 
     async def get_data(self, event):
         self.group_name = event["group_name"]
