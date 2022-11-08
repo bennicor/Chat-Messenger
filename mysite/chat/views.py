@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
-# Create your views here.
-def lobby(request):
+def index(request):
+    # Initialize new session object
     if "group_name" not in request.session:
         request.session["group_name"] = ""
-    return render(request, "chat/lobby.html")
+    return render(request, "chat/index.html")

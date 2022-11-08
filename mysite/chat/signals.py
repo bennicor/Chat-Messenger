@@ -1,10 +1,11 @@
-from tokenize import group
 from django.dispatch import receiver
 from django.db.models.signals import post_delete
 from chat.models import Channel, Group
 
+
 @receiver(post_delete, sender=Channel)
-def test(sender, instance, **kwargs):
+def delete_connected_channels(sender, instance, **kwargs):
+    # Delete group if all related channels are deleted
     if instance.group_name:
         group = Group.objects.get(pk=instance.group_name.pk)
         
