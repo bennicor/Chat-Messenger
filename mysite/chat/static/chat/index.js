@@ -15,7 +15,6 @@ searchButton.addEventListener("click", startChat);
 
 function handleMessage(e) {
     let data = JSON.parse(e.data);
-    let messages = document.querySelector(".chat-window");
     let userId = localStorage.getItem("user_id");
     
     if (data.type === "chat") {
@@ -54,7 +53,8 @@ function handleMessage(e) {
             `
         }
 
-        messages.insertAdjacentHTML("beforeend", message);
+        chatMessages.insertAdjacentHTML("beforeend", message);
+        focusOnLastMessage();
     } else if (data.type === "user_data") {
         localStorage.setItem("user_id", data.user_id);
         localStorage.setItem("group_name", data.group_name);
@@ -62,6 +62,7 @@ function handleMessage(e) {
         // If backend is ready
         toggleLoadingScreen();
         toggleChatElements();
+        focusOnLastMessage();
     } else if (data.type === "typing") {
         let status = data.message;
         if (status) {
@@ -85,6 +86,15 @@ function toggleChatElements() {
 
 function toggleLoadingScreen() {
     loadingScreen.style.display = (loadingScreen.style.display == "none") ? "block" : "none";
+}
+
+function focusOnLastMessage() {
+    let messageElement = chatMessages.lastElementChild;
+    const y = messageElement.offsetTop;
+    chatMessages.scrollTo({
+        top: y,
+        behavior: 'smooth'
+    });
 }
 
 var timeout;
