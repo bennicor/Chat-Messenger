@@ -7,6 +7,7 @@ const chatMessages = document.getElementById("messages");
 const chatInput = document.querySelector(".chat-input input");
 const statusMessage = document.getElementById("status");
 const url = `ws://${window.location.host}/ws/chat/`;
+var unreadMessageCounter = 0;
 
 if (localStorage.getItem("chatting") && localStorage.getItem("group_name")) {
     startChat();
@@ -54,7 +55,17 @@ function handleMessage(e) {
         }
 
         chatMessages.insertAdjacentHTML("beforeend", message);
-        focusOnLastMessage();
+        // Notify user if he has unread messages with tab title
+        if (document.visibilityState === "hidden") {
+            unreadMessageCounter += 1;
+            let unreadMessages = unreadMessageCounter;            
+            if (unreadMessageCounter > 9) {
+                unreadMessages = "9+";
+            }
+            document.title = `${unreadMessages} новых сообщений`
+        } else {
+            focusOnLastMessage();
+        }
     } else if (data.type === "user_data") {
         localStorage.setItem("user_id", data.user_id);
         localStorage.setItem("group_name", data.group_name);
@@ -180,3 +191,12 @@ form.addEventListener("submit", (e) => {
         chatInput.removeAttribute("good");
     }
 });
+
+// Display unread message counter in tab title
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        unreadMessageCounter = 0;
+        document.title = "Текстовый чат"
+    }
+})
+  
